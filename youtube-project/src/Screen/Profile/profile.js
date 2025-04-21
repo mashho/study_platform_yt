@@ -21,7 +21,7 @@ const Profile = ({ sideNavbar }) => {
     }
     useEffect(() => {
         fetchData()
-    }, [])
+    }, [id])
     let userInfo =localStorage.getItem("userInfo")? JSON.parse(localStorage.getItem("userInfo")):null;
     return (
         <div className="profile">

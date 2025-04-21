@@ -10,7 +10,8 @@ exports.addComment = async (req, res) => {
         // console.log(video)
         const comment = new Comment({ user: req.user._id, video, message });
         await comment.save();
-        res.status(201).json(comment);
+        const populatedComment = await Comment.findById(comment._id).populate('user');
+        res.status(201).json(populatedComment);
     } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }

@@ -33,7 +33,7 @@ exports.getAllVideo = async (req, res) => {
 
 exports.getVideoById = async (req, res) => {
     try {
-        const video = await Videos.findById(req.params.id).populate('user', 'userName profilePic userName createdAt');
+        const video = await Videos.findById(req.params.id).populate('user', 'userName profilePic userName createdAt subscriber');
         res.status(201).json({ sucess: "true", "video": video });
     } catch {
         res.status(500).json({ error: 'Server error' });

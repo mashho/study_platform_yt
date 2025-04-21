@@ -15,10 +15,14 @@ const Video = () => {
     const [data, setData] = useState(null);
     const [videoUrl, setVideoURL] = useState("");
     const { id } = useParams();
+    const [subscriberText,setSubscribeText] = useState("Subscribe")
+    let userInfo = localStorage.getItem("userInfo") ? JSON.parse(localStorage.getItem("userInfo")) : null;
+
     const fetchData = async () => {
         await axios.get(`http://localhost:8000/api/getVideoById/${id}`).then(res => {
             console.log(res)
             setData(res.data.video)
+            res.data.video.user.subscriber.includes(userInfo?._id)?setSubscribeText("Unsubscribe"):setSubscribeText("Subscribe")
             setVideoURL(res.data.video.videoLink);
             setLikeNumber(res.data.video.like)
         }).catch(err => {
@@ -50,6 +54,8 @@ const Video = () => {
         }
         await axios.post('http://localhost:8000/commentApi/comment', body, { withCredentials: true }).then(resp => {
             console.log(resp)
+            setComment([...comment,resp.data])
+            setMessage("")
         }).catch(err => {
             toast.error("Please login For Comment")
             console.log(err)
@@ -70,6 +76,34 @@ const Video = () => {
         let id = data?.user?._id;
         navigate(`/user/${id}`)
     }
+
+    // const isSubscribed = ()=>{
+    //     data?.user?.subscriber.map((item)=>{
+    //         if(item._id===userInfo?._id){
+    //             setSubscribeText("Unsubscribe")
+    //             return true;
+    //         }
+    //     })
+    //     setSubscribeText("Subscribe")
+
+    //     return false;
+    // }
+
+    const handleSubscribe = async()=>{
+        await axios.post(`http://localhost:8000/auth/subscribe`,{userId:data?.user?._id},{withCredentials:true}).then((response)=>{
+            setSubscribeText("Unsubscribe")
+        }).catch(err=>{
+            console.log(err)
+        })
+    }
+    const handleUnSubscribe = async()=>{
+        await axios.post(`http://localhost:8000/auth/unsubscribe`,{userId:data?.user?._id},{withCredentials:true}).then((response)=>{
+            setSubscribeText("Subscribe")
+        }).catch(err=>{
+            console.log(err)
+        })
+    }
+
     return (
         <div className='video'>
             <div className="videoPostSection">
@@ -95,7 +129,9 @@ const Video = () => {
                                 <div className="youtubePostProfileName"> {data?.user?.userName} </div>
                                 <div className="youtubePostProfileSubs">{data?.user?.createdAt.slice(0, 10)}</div>
                             </div>
-                            {/* <div className="subscribeBtnYoutube">Subscribe</div> */}
+                            {
+                                userInfo?userInfo._id===data?.user?._id?null:<div className="subscribeBtnYoutube" onClick={subscriberText==="Subscribe"?handleSubscribe:handleUnSubscribe}>{subscriberText}</div>:null
+                            }
                         </div>
                         <div className="youtube_video_likeBlock">
                             <div className="youtube_video_likeBlock_Like" onClick={() =>likeUpdate()}>

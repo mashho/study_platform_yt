@@ -47,9 +47,7 @@ const HomePage = ({ sideNavbar }) => {
                             <Link to={`/watch/${item._id}`} className="youtube_Video">
                                 <div className="youtube_thumbnailBox">
                                     <img className='youtube_thumbnailPic' src={item.thumbnail} alt='thumbnail' />
-                                    <div className="youtube_timingThumbnail">
-                                        28:05
-                                    </div>
+                                    
                                 </div>
                                 <div className="youtubeTitleBox">
                                     <div className="youtubeTitleBoxProfile">

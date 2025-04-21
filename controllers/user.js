@@ -4,10 +4,10 @@ const User = require('../models/users')
 const Video = require('../models/video');
 
 const cookieOptions = {
-    httpOnly: true,
-    secure: false, // Set to true in production
-    sameSite: 'Lax'
-  
+  httpOnly: true,
+  secure: false, // Set to true in production
+  sameSite: 'Lax'
+
 };
 exports.signUp = async (req, res) => {
   const { channelName, userName, about, profilePic, password } = req.body;
@@ -35,8 +35,8 @@ exports.signIn = async (req, res) => {
     if (user && await bcrypt.compare(password, user.password)) {
 
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-      
-      res.cookie('token', token,cookieOptions);
+
+      res.cookie('token', token, cookieOptions);
       // console.log(req.cookies)
       res.json({ message: 'Logged in successfully', success: "true", user, token });
     } else {
@@ -65,3 +65,57 @@ exports.logout = async (req, res) => {
 //     res.status(500).json({ error: error });
 //   }
 // }
+
+
+exports.subscribe = async (req, res) => {
+  try {
+    let { userId } = req.body;
+    let ownId = req.user;
+    const channel = await User.findById(userId);
+    if (channel) {
+      if (!channel.subscriber.includes(ownId._id)) {
+        channel.subscriber.push(ownId._id);
+        await channel.save();
+        res.status(200).json({ message: 'Successfully subscribed' });
+      }
+
+    }
+
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+}
+
+exports.unsubscribe = async (req, res) => {
+  try {
+    let { userId } = req.body;
+    let ownId = req.user;
+    const channel = await User.findById(userId);
+    if (channel) {
+
+      if(channel.subscriber.includes(ownId._id)){
+        channel.subscriber.pull(ownId._id);
+        await channel.save();
+        return res.status(200).json({ message: 'Successfully Unsubscribed' });
+      }
+      return res.status(400).json({message:"Something Went Wrong"})
+    }
+
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+}
+
+exports.getAllSubcribedChannel = async(req,res)=>{
+  try{
+    const usersISubscribedTo = await User.find({
+      subscriber: { $in: [req.user._id] } // or your userId
+    }).select('userName channelName profilePic');
+    console.log(usersISubscribedTo)
+    res.status(200).json({
+      data:usersISubscribedTo
+    })
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
+}
